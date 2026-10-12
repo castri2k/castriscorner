@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Castri's Corner — NBA Player Props</title>
+<meta name="description" content="NBA player props from a model. Every pick posted is graded in public, wins and losses alike. 2025-26: 101-79, +4.4 units · 2026-27: starts with the first card.">
+<meta property="og:title" content="Castri&#x27;s Corner — NBA player props">
+<meta property="og:description" content="NBA player props from a model. Every pick posted is graded in public, wins and losses alike. 2025-26: 101-79, +4.4 units · 2026-27: starts with the first card.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#8b5cf6">
+<meta property="og:url" content="https://castri2k.github.io/castriscorner/">
+<meta property="og:image" content="https://castri2k.github.io/castriscorner/logo.png">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050508; --s1:#0a0a10; --s2:#0e0e16; --s3:#14141e;
+  --border:#17171f; --border2:#23232f;
+  --text:#c8c8d4; --bright:#f0f0f6; --muted:#6a6a84; --dim:#262636;
+  --accent:#8b5cf6; --accent2:#c4b5fd; --ball:#f97316;
+  --green:#22c55e; --red:#ef4444; --yellow:#eab308; --blue:#60a5fa;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --r:14px;
+  color-scheme:dark;
+}
+@property --ang{syntax:'<angle>';initial-value:0deg;inherits:false}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:112px}
+body{background:var(--bg);color:var(--text);font:14px/1.55 'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button{font:inherit;color:inherit}
+::selection{background:rgba(139,92,246,.4);color:#fff}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.g{color:var(--green)} .r{color:var(--red)} .m{color:var(--muted)}
+
+/* ── ambient background ── */
+.bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(90px)}
+.orb.a{width:640px;height:640px;top:-260px;left:-200px;background:radial-gradient(circle,rgba(139,92,246,.24),transparent 65%);animation:dA 26s ease-in-out infinite alternate}
+.orb.b{width:560px;height:560px;top:50vh;right:-240px;background:radial-gradient(circle,rgba(249,115,22,.10),transparent 65%);animation:dB 32s ease-in-out infinite alternate}
+@keyframes dA{to{transform:translate(160px,120px) scale(1.15)}}
+@keyframes dB{to{transform:translate(-140px,-120px) scale(1.1)}}
+.court{position:absolute;inset:0;width:100%;height:100%;opacity:.045;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 40%,#000 15%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 40%,#000 15%,transparent 70%)}
+
+/* ── top bar ── */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:rgba(5,5,8,.72);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--border)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:58px;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{width:32px;height:32px;border-radius:50%;box-shadow:0 0 16px rgba(139,92,246,.5);transition:transform .9s var(--ease)}
+.brand:hover img{transform:rotate(360deg)}
+.brand b{font-size:17px;font-weight:800;letter-spacing:-.4px;color:var(--bright)}
+.brand b span{background:linear-gradient(90deg,var(--accent),var(--accent2),var(--ball),var(--accent));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 8s linear infinite}
+@keyframes sheen{to{background-position:300% 0}}
+.discord-btn{display:none;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-size:13px;color:#fff;
+  background:linear-gradient(135deg,#5865f2,#7c3aed);padding:8px 14px;border-radius:99px;box-shadow:0 6px 20px -6px rgba(88,101,242,.7);transition:transform .2s var(--ease),box-shadow .2s}
+.discord-btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px -6px rgba(88,101,242,.9)}
+.discord-btn.show{display:inline-flex;flex:none;white-space:nowrap}
+.discord-btn svg{width:18px;height:18px}
+/* the top-bar button says less on a phone, so it never crowds the name */
+.discord-btn .tight{display:none}
+@media (max-width:480px){.discord-btn .wide{display:none}.discord-btn .tight{display:inline}}
+/* where the Join button goes, until public_site.json has an invite link */
+.discord-btn.soon,.discord-btn.soon:hover{background:none;box-shadow:none;transform:none;border:1px dashed var(--border2);color:var(--muted);font-weight:600;cursor:default}
+
+/* section pills (scrollspy) */
+.pills{position:sticky;top:calc(58px + env(safe-area-inset-top,0px));z-index:39;background:rgba(5,5,8,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.pills .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-top:8px;padding-bottom:8px}
+.pills .wrap::-webkit-scrollbar{display:none}
+.pill{flex:none;text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);
+  padding:6px 12px;border-radius:99px;border:1px solid transparent;transition:all .25s}
+.pill:hover{color:var(--text)}
+.pill.on{color:#fff;background:rgba(139,92,246,.18);border-color:rgba(139,92,246,.45)}
+
+/* ── hero ── */
+.hero{position:relative;padding:48px 0 34px;overflow:hidden}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent2);display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';width:18px;height:2px;background:var(--ball);border-radius:2px}
+.big{font-family:var(--mono);font-weight:600;font-size:clamp(64px,17vw,132px);line-height:.95;letter-spacing:-4px;margin:14px 0 6px;font-variant-numeric:tabular-nums}
+.big.pos{background:linear-gradient(180deg,#86efac,#16a34a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 8px 30px rgba(34,197,94,.25))}
+.big.neg{background:linear-gradient(180deg,#fca5a5,#b91c1c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.big small{font-size:.42em;letter-spacing:-1px}
+.hero-sub{font-size:15px;color:var(--text);max-width:520px}
+.hero-sub b{color:var(--bright)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{display:flex;flex-direction:column;background:rgba(14,14,22,.7);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;min-width:104px;backdrop-filter:blur(6px)}
+.chip .k{font-family:var(--mono);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.chip .v{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--bright);font-variant-numeric:tabular-nums}
+/* the record, one row a season */
+.seasons{display:grid;gap:6px;margin-top:10px;max-width:520px}
+.srow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;
+  background:rgba(14,14,22,.7);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;backdrop-filter:blur(6px)}
+.srow .sn{color:var(--bright);font-weight:600}
+.srow .sr{color:var(--muted);min-width:0}
+.srow .su{font-weight:600}
+.hero-spark{position:absolute;right:-2%;bottom:0;width:62%;height:70%;opacity:.55;pointer-events:none;z-index:-1;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%)}
+.hero-ball{position:absolute;right:6%;top:36px;width:96px;height:96px;border-radius:50%;opacity:.9;z-index:-1;
+  box-shadow:0 0 60px rgba(139,92,246,.45);animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-12px) rotate(12deg)}}
+@media (max-width:640px){.hero-ball{width:60px;height:60px;top:84px;right:5%}.hero-spark{width:100%;height:45%}}
+
+/* ── sections ── */
+section{padding:34px 0}
+.sh{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sh h2,.status-card h3{text-wrap:balance}
+.sh h2{font-size:24px;font-weight:800;letter-spacing:-.6px;color:var(--bright);line-height:1.1}
+.sh h2 .dot{display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--accent);box-shadow:0 0 12px var(--accent);margin-right:10px;vertical-align:3px}
+.sh .note{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.5px}
+.card{background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid2>*{min-width:0}   /* so a long calendar scrolls inside its card instead of widening the page */
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+
+/* entrance as sections scroll in (everything is visible without it) */
+.reveal.in{animation:riseIn .8s var(--ease) both}
+.stag.in>*{animation:riseIn .7s var(--ease) both}
+@keyframes riseIn{from{opacity:0;transform:translateY(18px)}}
+.stag.in>*:nth-child(2){animation-delay:.06s}.stag.in>*:nth-child(3){animation-delay:.12s}.stag.in>*:nth-child(4){animation-delay:.18s}
+.stag.in>*:nth-child(5){animation-delay:.24s}.stag.in>*:nth-child(6){animation-delay:.30s}.stag.in>*:nth-child(n+7){animation-delay:.36s}
+
+/* ── tonight ── */
+.status-card{position:relative;overflow:hidden;text-align:center;padding:44px 20px}
+.status-card h3{font-size:22px;font-weight:800;color:var(--bright);margin:16px 0 6px;letter-spacing:-.4px}
+.status-card p{color:var(--muted);max-width:440px;margin:0 auto}
+.countdown{display:flex;justify-content:center;gap:10px;margin-top:22px}
+.cd{min-width:70px;background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:10px 8px}
+.cd b{display:block;font-family:var(--mono);font-size:28px;font-weight:600;color:var(--bright);line-height:1.1;font-variant-numeric:tabular-nums}
+.cd span{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+@media (max-width:400px){.cd{min-width:60px}.cd b{font-size:24px}.countdown{gap:7px}}
+.after-cd{margin-top:16px;color:var(--ball)}
+/* the opening weeks: games played toward the number the model needs */
+.warm{max-width:300px;margin:22px auto 0}
+.warm .bar{height:8px;border-radius:99px;background:var(--dim);overflow:hidden}
+.warm .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--ball))}
+.warm .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--muted);margin-top:8px}
+.ball-wrap{position:relative;display:inline-block;width:44px;height:74px}
+.ball{position:absolute;left:0;top:0;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fdba74,var(--ball) 45%,#9a3412);animation:bounce .6s cubic-bezier(.5,.05,.5,1) infinite alternate}
+.ball::before{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(90deg,transparent 47%,rgba(0,0,0,.5) 47% 53%,transparent 53%),linear-gradient(0deg,transparent 47%,rgba(0,0,0,.5) 47% 53%,transparent 53%)}
+.ball::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:inset 8px 0 0 -5px rgba(0,0,0,.5),inset -8px 0 0 -5px rgba(0,0,0,.5)}
+.ball-wrap i{position:absolute;left:6px;bottom:0;width:32px;height:6px;border-radius:50%;background:rgba(0,0,0,.7);animation:shadow .6s cubic-bezier(.5,.05,.5,1) infinite alternate}
+@keyframes bounce{85%{transform:translateY(26px)}100%{transform:translateY(30px) scale(1.12,.86) rotate(40deg)}}
+@keyframes shadow{0%{transform:scale(.45);opacity:.3}100%{transform:scale(1.05);opacity:.8}}
+
+.picks{display:grid;gap:12px}
+.pick{position:relative;border-radius:var(--r);padding:1px;background:var(--border);min-width:0}   /* min-width: a long name must not widen the card past a phone's screen */
+.pick.top{background:conic-gradient(from var(--ang),var(--border2) 0 55%,var(--accent) 70%,var(--ball) 80%,var(--border2) 92%);animation:spin 7s linear infinite}
+@keyframes spin{to{--ang:360deg}}
+.pick-in{background:linear-gradient(135deg,#0f0d1a,var(--s1) 55%);border-radius:calc(var(--r) - 1px);padding:16px 16px 14px}
+.pick-head{display:flex;align-items:center;gap:12px}
+.rank{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--muted);min-width:22px}
+.pick.top .rank{color:var(--ball)}
+.avatar{--h:260;width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:13px;font-weight:800;letter-spacing:.5px;
+  color:hsl(var(--h) 90% 86%);background:radial-gradient(circle at 30% 25%,hsl(var(--h) 70% 40%),hsl(var(--h) 60% 15%));box-shadow:inset 0 0 0 1px hsl(var(--h) 60% 50% / .5)}
+.avatar.sm{width:30px;height:30px;font-size:10px}
+/* The headshot sits over the initials. It is a cut-out, so the initials are
+   hidden only once it has loaded; a photo that never arrives leaves them. */
+.avatar{position:relative;overflow:hidden}
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0;opacity:0;transition:opacity .25s}
+.avatar.has-img{color:transparent}
+.avatar.has-img img{opacity:1}
+.tlogo{width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:5px}
+.tabbr{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.5px;line-height:1;color:var(--muted);
+  border:1px solid var(--border2);border-radius:4px;padding:2px 4px;vertical-align:1px;margin-right:5px}
+.rc .l1 .tlogo,.rc .l1 .tabbr{margin:0 0 0 6px}
+.who{flex:1;min-width:0}
+.who b{display:block;font-size:17px;font-weight:800;color:var(--bright);letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.stake{text-align:right;flex:none}
+.stake b{font-family:var(--mono);font-size:18px;color:var(--yellow);font-weight:600}
+.stake .bar{width:56px;height:4px;border-radius:2px;background:var(--dim);margin-top:4px;overflow:hidden;margin-left:auto}
+.stake .bar i{display:block;height:100%;background:linear-gradient(90deg,#facc15,var(--ball));border-radius:2px}
+.play{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin:14px 0 10px}
+.play .bet{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--bright);letter-spacing:-.5px}
+.play .bet .over{color:var(--green)} .play .bet .under{color:var(--red)}
+.play .price{font-family:var(--mono);font-size:13px;color:var(--text)}
+.play .price em{font-style:normal;color:var(--muted);margin-left:6px;font-size:11px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.5px;padding:3px 8px;border-radius:6px;border:1px solid var(--border2);color:var(--muted);background:var(--bg);white-space:nowrap}
+.tag.up{color:var(--blue);border-color:rgba(96,165,250,.35);background:rgba(59,130,246,.08);position:relative;overflow:hidden}
+.tag.up::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.25),transparent 70%);transform:translateX(-100%);animation:shimmer 3s ease-in-out infinite}
+@keyframes shimmer{60%,100%{transform:translateX(100%)}}
+.tag.ok{color:var(--green);border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.07)}
+.tag.dn{color:var(--yellow);border-color:rgba(234,179,8,.3);background:rgba(234,179,8,.07)}
+.tag.live{color:var(--ball);border-color:rgba(249,115,22,.35)}
+.tag.W{color:var(--green);border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);font-weight:600}
+.tag.L{color:var(--red);border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.1);font-weight:600}
+.tag.P{color:var(--text)}
+.judge{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+.judge summary{list-style:none;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);display:flex;align-items:center;gap:8px;user-select:none}
+.judge summary::-webkit-details-marker{display:none}
+.judge summary .chev{transition:transform .3s var(--ease)}
+.judge[open] summary .chev{transform:rotate(90deg)}
+.judge p{margin-top:10px;font-size:13.5px;line-height:1.7;color:#b4b4c8;border-left:2px solid var(--accent);padding-left:12px;animation:fadeIn .4s var(--ease)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}}
+.pick-actions{display:flex;gap:8px;margin-top:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:var(--s3);border:1px solid var(--border2);border-radius:9px;padding:7px 12px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--text);transition:all .2s;position:relative;overflow:hidden}
+.btn:hover{border-color:var(--accent);color:var(--accent2)}
+.btn:active{transform:scale(.97)}
+.btn.done{border-color:var(--green);color:var(--green)}
+.slate-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.stale{font-family:var(--mono);font-size:11px;color:var(--yellow);background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.25);padding:4px 10px;border-radius:99px}
+.cta{display:none;margin-top:14px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 18px;border-radius:var(--r);
+  background:linear-gradient(120deg,rgba(88,101,242,.18),rgba(139,92,246,.10));border:1px solid rgba(88,101,242,.35)}
+.cta.show{display:flex}
+.cta b{color:var(--bright)}
+
+/* ── results ── */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{padding:14px 16px}
+.tile .k{font-family:var(--mono);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.tile .v{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--bright);margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .s{font-size:11.5px;color:var(--muted)}
+.chart-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.chart-top .t{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.chart-top .t b{font-size:14px;letter-spacing:0;margin-left:8px}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--border2);border-radius:9px;padding:3px;gap:2px}
+.seg button{background:none;border:0;cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;color:var(--muted);padding:5px 10px;border-radius:6px;transition:all .2s}
+.seg button.on{background:var(--accent);color:#fff}
+.chart{position:relative;height:240px}
+@media (max-width:640px){.chart{height:200px}}
+.chart svg{display:block;overflow:visible}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.6s var(--ease) forwards .1s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.fade{animation:fadeOnly 1s ease both .5s}
+@keyframes fadeOnly{from{opacity:0}}
+.tip{position:absolute;pointer-events:none;background:rgba(14,14,22,.96);border:1px solid var(--border2);border-radius:9px;padding:8px 11px;font-family:var(--mono);font-size:11px;
+  color:var(--text);white-space:nowrap;box-shadow:0 10px 26px rgba(0,0,0,.55);opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s;z-index:5}
+.tip.show{opacity:1;transform:none}
+.tip .d{color:var(--muted);font-size:10px;letter-spacing:1px}
+
+.form{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.fd{width:16px;height:26px;border-radius:5px}
+.fd.w{background:linear-gradient(180deg,#34d466,#15803d)}
+.fd.l{background:linear-gradient(180deg,#f87171,#b91c1c)}
+.fd.p{background:var(--dim)}
+.stag.in .fd{animation:pop .45s var(--ease) both;animation-delay:calc(var(--i) * 25ms)}
+@keyframes pop{from{transform:scaleY(0)}}
+.streak{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px}
+.streak.W{color:var(--green);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3)}
+.streak.L{color:var(--red);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3)}
+
+.cal-scroll{overflow-x:auto;padding-bottom:4px}
+.cal{display:grid;grid-auto-flow:column;grid-template-rows:14px repeat(7,13px);gap:3px;width:max-content}
+.cal .mo{font-family:var(--mono);font-size:9.5px;color:var(--muted);white-space:nowrap}
+.cal .c{width:13px;height:13px;border-radius:3px;background:rgba(255,255,255,.035);cursor:pointer;transition:transform .15s}
+.cal .c:hover,.cal .c.sel{transform:scale(1.35);outline:1px solid rgba(255,255,255,.5)}
+.cal .c.x{visibility:hidden}
+.cal-info{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px;min-height:17px}
+.legend{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+.mk{display:grid;grid-template-columns:92px 56px 1fr 64px;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.mk:last-child{border-bottom:0}
+.mk .n{font-family:var(--mono);font-size:12px;color:var(--bright);font-weight:600}
+.mk .n em{font-style:normal;font-weight:400;font-size:10.5px;margin-left:4px}
+.mk .rec{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.mk .track{position:relative;height:10px}
+.mk .track::before{content:'';position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--border2)}
+.mk .fill{position:absolute;top:0;height:100%;border-radius:3px}
+.mk .fill.pos{left:50%;transform-origin:left;background:linear-gradient(90deg,#15803d,#34d466)}
+.mk .fill.neg{right:50%;transform-origin:right;background:linear-gradient(270deg,#b91c1c,#f87171)}
+.in .mk .fill{animation:growX 1s var(--ease) both .2s}
+@keyframes growX{from{transform:scaleX(0)}}
+.mk .u{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+@media (max-width:480px){.mk{grid-template-columns:80px 1fr 58px}.mk .rec{display:none}}
+
+/* ── receipts ── */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.fchip{cursor:pointer;background:var(--s1);border:1px solid var(--border2);border-radius:99px;padding:5px 12px;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;color:var(--muted);transition:all .2s}
+.fchip:hover{color:var(--text)}
+.fchip.on{background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.5);color:var(--accent2)}
+.search{flex:1;min-width:170px;background:var(--s1);border:1px solid var(--border2);border-radius:99px;padding:7px 14px;color:var(--bright);font:inherit;font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+.rc{border-bottom:1px solid var(--border)}
+.rc:last-child{border-bottom:0}
+.rc summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:30px 1fr auto auto;align-items:center;gap:12px;padding:11px 4px;transition:background .15s;border-radius:8px}
+.rc summary::-webkit-details-marker{display:none}
+.rc summary:hover{background:rgba(139,92,246,.04)}
+.rc .l1{font-weight:700;color:var(--bright);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc .l2{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.res{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;font-family:var(--mono);font-size:11px;font-weight:700}
+.res.W{background:rgba(34,197,94,.14);color:var(--green)}
+.res.L{background:rgba(239,68,68,.14);color:var(--red)}
+.res.P{background:var(--dim);color:var(--muted)}
+.rc .u{font-family:var(--mono);font-size:12px;font-weight:600;min-width:58px;text-align:right}
+.rc .body{padding:0 4px 14px 46px;font-size:13px;line-height:1.7;color:#a8a8bc;animation:fadeIn .35s var(--ease)}
+.rc .body .meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px}
+.more{display:block;margin:14px auto 0}
+.empty{text-align:center;color:var(--muted);padding:26px;font-family:var(--mono);font-size:12px}
+
+/* ── how it works ── */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;position:relative}
+@media (max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.steps{grid-template-columns:1fr}}
+.step{position:relative;padding:18px}
+.step .ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;margin-bottom:12px;background:var(--bg);border:1px solid var(--border2)}
+.step .num{position:absolute;top:14px;right:16px;font-family:var(--mono);font-size:11px;color:var(--dim);font-weight:600}
+.step h4{font-size:15px;color:var(--bright);font-weight:800;margin-bottom:4px}
+.step p{font-size:13px;color:var(--muted)}
+.step.bull .ico{border-color:rgba(34,197,94,.35)} .step.bear .ico{border-color:rgba(239,68,68,.35)} .step.ruling .ico{border-color:rgba(139,92,246,.45)}
+.fine-print{margin-top:14px;font-size:12.5px;color:var(--muted)}
+
+/* ── footer ── */
+footer{border-top:1px solid var(--border);margin-top:30px;padding:26px 0 40px;font-size:12px;color:var(--muted)}
+footer .rg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:10px}
+footer .rg b{color:var(--text)}
+footer p{max-width:720px;margin-bottom:6px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.001ms!important;transition-delay:0s!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="orb a"></div><div class="orb b"></div>
+  <svg class="court" viewBox="0 0 940 500" preserveAspectRatio="xMidYMid slice">
+    <g fill="none" stroke="#fff" stroke-width="2">
+      <rect x="10" y="10" width="920" height="480" rx="2"/><line x1="470" y1="10" x2="470" y2="490"/>
+      <circle cx="470" cy="250" r="60"/><circle cx="470" cy="250" r="20"/>
+      <rect x="10" y="170" width="190" height="160"/><circle cx="200" cy="250" r="60"/>
+      <path d="M10 40 H150 A237.5 237.5 0 0 1 150 460 H10"/><line x1="50" y1="220" x2="50" y2="280"/><circle cx="62.5" cy="250" r="7.5"/>
+      <rect x="740" y="170" width="190" height="160"/><circle cx="740" cy="250" r="60"/>
+      <path d="M930 40 H790 A237.5 237.5 0 0 0 790 460 H930"/><line x1="890" y1="220" x2="890" y2="280"/><circle cx="877.5" cy="250" r="7.5"/>
+    </g>
+  </svg>
+</div>
+
+<div class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="logo.png" alt=""><b><span>Castri's</span> Corner</b></a>
+    <!-- A placeholder until there is an invite link (site_set_invite.bat); then the script makes it the Join button. -->
+    <a class="discord-btn show soon" id="discordTop" target="_blank" rel="noopener" aria-disabled="true" title="The invite link is on its way">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.5 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18a19.9 19.9 0 0 0 6 3l1.3-2a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4-2 1 1.3 2a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.6-3.6-13.6ZM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>
+      <span class="wide">Discord invite soon</span><span class="tight">Soon</span>
+    </a>
+  </div>
+</div>
+<nav class="pills" aria-label="Sections">
+  <div class="wrap">
+    <a class="pill" href="#tonight">Tonight</a>
+    <a class="pill" href="#results">Results</a>
+    <a class="pill" href="#markets">By market</a>
+    <a class="pill" href="#receipts">Receipts</a>
+    <a class="pill" href="#how">How it works</a>
+  </div>
+</nav>
+
+<main id="top">
+  <!-- HERO -->
+  <div class="hero">
+    <svg class="hero-spark" id="heroSpark" preserveAspectRatio="none"></svg>
+    <img class="hero-ball" src="logo.png" alt="">
+    <div class="wrap">
+      <div class="eyebrow">NBA player props · model + AI debate</div>
+      <div class="big" id="heroUnits">—</div>
+      <div class="hero-sub" id="heroSub"></div>
+      <div class="chips" id="heroChips"></div>
+      <div class="seasons" id="heroSeasons"></div>
+    </div>
+  </div>
+
+  <!-- TONIGHT -->
+  <section id="tonight" data-spy>
+    <div class="wrap">
+      <div class="sh reveal"><h2><span class="dot"></span><span id="tonightTitle">Tonight's card</span></h2><span class="note" id="tonightNote"></span></div>
+      <div id="tonightBody" class="reveal"></div>
+      <div class="cta" id="cta">
+        <div><b>Get the card the second it drops.</b><br><span class="m" id="ctaSub">Picks hit Discord about half an hour before the first tip.</span></div>
+        <a class="discord-btn show" id="discordCta" target="_blank" rel="noopener"><span>Join the Discord</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" data-spy>
+    <div class="wrap">
+      <div class="sh reveal"><h2><span class="dot"></span>Results</h2><span class="note">all-time · every posted pick · 1u = one standard stake · units at the real odds · pushes refunded</span></div>
+      <div class="tiles stag" id="tiles"></div>
+      <div class="card reveal" style="margin-bottom:12px">
+        <div class="chart-top">
+          <div class="t">Units won <b id="rangeUnits"></b></div>
+          <div class="seg" id="rangeSeg" role="group" aria-label="Chart range">
+            <button data-r="all" class="on">ALL</button><button data-r="60">60D</button><button data-r="30">30D</button>
+          </div>
+        </div>
+        <div class="chart" id="chart"></div>
+      </div>
+      <div class="grid2">
+        <div class="card reveal">
+          <div class="chart-top"><div class="t" id="formTitle">Form · last 20</div><span id="streakBadge"></span></div>
+          <div class="form stag" id="form"></div>
+        </div>
+        <div class="card reveal">
+          <div class="chart-top"><div class="t">Every slate</div>
+            <div class="legend">loss <i style="background:#b91c1c"></i><i style="background:rgba(239,68,68,.4)"></i><i style="background:rgba(255,255,255,.06)"></i><i style="background:rgba(34,197,94,.4)"></i><i style="background:#16a34a"></i> win</div></div>
+          <div class="cal-scroll"><div class="cal" id="cal"></div></div>
+          <div class="cal-info" id="calInfo">Tap a day</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARKETS -->
+  <section id="markets" data-spy>
+    <div class="wrap">
+      <div class="sh reveal"><h2><span class="dot"></span>By market</h2><span class="note">all-time · the good and the bad, units won or lost</span></div>
+      <div class="card reveal" id="mkCard"></div>
+    </div>
+  </section>
+
+  <!-- RECEIPTS -->
+  <section id="receipts" data-spy>
+    <div class="wrap">
+      <div class="sh reveal"><h2><span class="dot"></span>Receipts</h2><span class="note" id="rcNote"></span></div>
+      <div class="card reveal">
+        <div class="filters" id="filters">
+          <button class="fchip on" data-res="ALL">ALL</button><button class="fchip" data-res="W">WINS</button><button class="fchip" data-res="L">LOSSES</button>
+          <span style="width:1px;height:18px;background:var(--border2)"></span>
+          <button class="fchip on" data-prop="ALL">ANY</button><button class="fchip" data-prop="PTS">PTS</button><button class="fchip" data-prop="REB">REB</button><button class="fchip" data-prop="AST">AST</button><button class="fchip" data-prop="3PM">3PM</button>
+          <input class="search" id="rcSearch" type="search" placeholder="Search a player…" autocomplete="off">
+        </div>
+        <div id="rcList"></div>
+        <button class="btn more" id="rcMore">Show more</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" data-spy>
+    <div class="wrap">
+      <div class="sh reveal"><h2><span class="dot"></span>How it works</h2></div>
+      <div class="steps stag">
+        <div class="card step"><span class="num">01</span><div class="ico">📡</div><h4>Scan the board</h4><p>Every game night the model reads <b class="mono" id="lpn" style="color:var(--bright)">hundreds of</b> player prop lines from <span id="nbooks"></span>sportsbooks licensed in Ontario.</p></div>
+        <div class="card step"><span class="num">02</span><div class="ico">📈</div><h4>Project every player</h4><p>Recent form, matchup defense, pace, rest, travel and injuries shape a projection for each line.</p></div>
+        <div class="card step bull"><span class="num">03</span><div class="ico">🐂</div><h4>Bull vs Bear</h4><p>Two AI analysts argue each shortlisted pick: one makes the case, the other tries to break it.</p></div>
+        <div class="card step ruling"><span class="num">04</span><div class="ico">⚖️</div><h4>The Judge writes it up</h4><p>A third AI weighs both sides against the bot's own track record and writes the read on every play we post.</p></div>
+      </div>
+      <p class="fine-print reveal" id="finePrint"></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="rg"><b>19+.</b><span>Prices shown are from sportsbooks licensed in Ontario; elsewhere the legal age and the books differ.</span></div>
+    <p>If gambling stops being fun: <b>ConnexOntario</b>, <b>1-866-531-2600</b>, free and confidential, 24/7, or text <b>CONNEX</b> to <b>247247</b>. Bet only what you can afford to lose.</p>
+    <p>Castri's Corner is an independent site, not affiliated with, endorsed by or sponsored by the NBA, its teams or players, or any sportsbook. It is for entertainment and information only and is not betting or financial advice. Picks are a model's opinion, and past results don't guarantee future results.</p>
+    <p class="mono" id="updated" style="font-size:11px"></p>
+  </div>
+</footer>
+
+<script>
+const D = {"generated_at":"2026-10-12T13:53:19+00:00","site":{"name":"Castri's Corner","discord_name":"Fade The Public","discord_invite":""},"today":{"date":"2026-10-12","status":"offseason","picks":[],"games":0,"first_tip":null,"opening_night":"2026-10-20","season":"2026-27","next_season":"2026-27","first_card":"2026-11-06"},"record":{"wins":101,"losses":79,"pushes":3,"hit_rate":56.1,"units":4.37,"risked":186.0,"roi":2.3,"since":"2026-03-12","last":"2026-06-05","streak":{"type":"","n":0},"best_run":10,"last10":{"w":0,"l":0},"unposted":2,"assumed":27,"tracked_from":"2026-04-02","season":"2026-27","season_from":"2026-07-01","seasons":[{"season":"2025-26","wins":101,"losses":79,"pushes":3,"hit_rate":56.1,"units":4.37,"risked":186.0,"roi":2.3,"since":"2026-03-12","last":"2026-06-05"},{"season":"2026-27","wins":0,"losses":0,"pushes":0,"hit_rate":0.0,"units":0,"risked":0,"roi":0.0,"since":null,"last":null}]},"daily":[{"date":"2026-03-12","w":1,"l":2,"p":1,"units":-1.09,"cum":-1.09},{"date":"2026-03-13","w":2,"l":0,"p":0,"units":1.82,"cum":0.73},{"date":"2026-03-14","w":3,"l":0,"p":1,"units":2.73,"cum":3.46},{"date":"2026-03-15","w":1,"l":3,"p":1,"units":-2.09,"cum":1.37},{"date":"2026-03-16","w":7,"l":14,"p":0,"units":-7.63,"cum":-6.26},{"date":"2026-03-17","w":4,"l":2,"p":0,"units":1.54,"cum":-4.72},{"date":"2026-03-18","w":10,"l":11,"p":0,"units":-1.9,"cum":-6.62},{"date":"2026-03-19","w":2,"l":1,"p":0,"units":0.56,"cum":-6.06},{"date":"2026-03-20","w":2,"l":2,"p":0,"units":-0.18,"cum":-6.24},{"date":"2026-03-21","w":3,"l":2,"p":0,"units":0.54,"cum":-5.7},{"date":"2026-03-22","w":4,"l":0,"p":0,"units":3.4,"cum":-2.3},{"date":"2026-03-23","w":4,"l":2,"p":0,"units":1.41,"cum":-0.89},{"date":"2026-03-24","w":0,"l":1,"p":0,"units":-1.0,"cum":-1.89},{"date":"2026-03-25","w":3,"l":2,"p":0,"units":0.7,"cum":-1.19},{"date":"2026-03-26","w":1,"l":3,"p":0,"units":-2.09,"cum":-3.28},{"date":"2026-03-27","w":4,"l":1,"p":0,"units":2.64,"cum":-0.64},{"date":"2026-03-28","w":2,"l":0,"p":0,"units":1.83,"cum":1.19},{"date":"2026-03-29","w":1,"l":1,"p":0,"units":-0.09,"cum":1.1},{"date":"2026-03-30","w":1,"l":1,"p":0,"units":-0.3,"cum":0.8},{"date":"2026-03-31","w":1,"l":1,"p":0,"units":-0.09,"cum":0.71},{"date":"2026-04-01","w":2,"l":1,"p":0,"units":0.57,"cum":1.28},{"date":"2026-04-02","w":0,"l":4,"p":0,"units":-4.0,"cum":-2.72},{"date":"2026-04-03","w":0,"l":2,"p":0,"units":-2.0,"cum":-4.72},{"date":"2026-04-05","w":1,"l":1,"p":0,"units":-0.34,"cum":-5.06},{"date":"2026-04-06","w":2,"l":2,"p":0,"units":-0.38,"cum":-5.44},{"date":"2026-04-07","w":2,"l":0,"p":0,"units":1.95,"cum":-3.49},{"date":"2026-04-08","w":1,"l":3,"p":0,"units":-2.2,"cum":-5.69},{"date":"2026-04-09","w":2,"l":0,"p":0,"units":1.61,"cum":-4.08},{"date":"2026-04-10","w":5,"l":0,"p":0,"units":3.79,"cum":-0.29},{"date":"2026-04-12","w":1,"l":0,"p":0,"units":0.6,"cum":0.31},{"date":"2026-04-14","w":1,"l":0,"p":0,"units":0.79,"cum":1.1},{"date":"2026-04-15","w":1,"l":1,"p":0,"units":0.1,"cum":1.2},{"date":"2026-04-17","w":0,"l":2,"p":0,"units":-2.0,"cum":-0.8},{"date":"2026-04-20","w":0,"l":1,"p":0,"units":-1.0,"cum":-1.8},{"date":"2026-04-21","w":0,"l":1,"p":0,"units":-1.0,"cum":-2.8},{"date":"2026-04-22","w":2,"l":1,"p":0,"units":0.82,"cum":-1.98},{"date":"2026-04-23","w":1,"l":0,"p":0,"units":0.81,"cum":-1.17},{"date":"2026-04-24","w":1,"l":0,"p":0,"units":0.89,"cum":-0.28},{"date":"2026-04-25","w":3,"l":1,"p":0,"units":1.55,"cum":1.27},{"date":"2026-04-26","w":1,"l":0,"p":0,"units":0.92,"cum":2.19},{"date":"2026-04-27","w":1,"l":1,"p":0,"units":-0.08,"cum":2.11},{"date":"2026-04-28","w":2,"l":0,"p":0,"units":1.68,"cum":3.79},{"date":"2026-04-29","w":1,"l":0,"p":0,"units":0.68,"cum":4.47},{"date":"2026-04-30","w":3,"l":1,"p":0,"units":1.52,"cum":5.99},{"date":"2026-05-02","w":1,"l":1,"p":0,"units":-0.32,"cum":5.67},{"date":"2026-05-04","w":1,"l":1,"p":0,"units":-0.33,"cum":5.34},{"date":"2026-05-05","w":0,"l":1,"p":0,"units":-1.0,"cum":4.34},{"date":"2026-05-06","w":1,"l":0,"p":0,"units":0.61,"cum":4.95},{"date":"2026-05-07","w":2,"l":0,"p":0,"units":1.72,"cum":6.67},{"date":"2026-05-08","w":1,"l":0,"p":0,"units":0.82,"cum":7.49},{"date":"2026-05-09","w":1,"l":0,"p":0,"units":0.91,"cum":8.4},{"date":"2026-05-10","w":1,"l":2,"p":0,"units":-1.31,"cum":7.09},{"date":"2026-05-11","w":1,"l":0,"p":0,"units":0.77,"cum":7.86},{"date":"2026-05-13","w":0,"l":1,"p":0,"units":-1.0,"cum":6.86},{"date":"2026-05-15","w":1,"l":0,"p":0,"units":0.94,"cum":7.8},{"date":"2026-05-20","w":1,"l":0,"p":0,"units":0.66,"cum":8.46},{"date":"2026-06-03","w":1,"l":0,"p":0,"units":0.91,"cum":9.37},{"date":"2026-06-05","w":0,"l":2,"p":0,"units":-5.0,"cum":4.37}],"markets":[{"prop":"PTS","side":"OVER","w":13,"l":19,"p":0,"units":-7.26},{"prop":"PTS","side":"UNDER","w":24,"l":22,"p":0,"units":-2.34},{"prop":"REB","side":"OVER","w":16,"l":16,"p":2,"units":-2.21},{"prop":"REB","side":"UNDER","w":20,"l":6,"p":0,"units":9.84},{"prop":"AST","side":"OVER","w":3,"l":1,"p":0,"units":1.73},{"prop":"AST","side":"UNDER","w":7,"l":2,"p":0,"units":3.28},{"prop":"3PM","side":"OVER","w":0,"l":4,"p":1,"units":-4.0},{"prop":"3PM","side":"UNDER","w":18,"l":9,"p":0,"units":5.33}],"history":[{"date":"2026-06-05","player":"De'Aaron Fox","prop":"3PM","side":"UNDER","line":1.5,"odds":-110,"actual":2.0,"units":2.5,"result":"L","u_pnl":-2.5,"opp":"NYK","verdict":"","judge":""},{"date":"2026-06-05","player":"Victor Wembanyama","prop":"PTS","side":"UNDER","line":27.5,"odds":-110,"actual":29.0,"units":2.5,"result":"L","u_pnl":-2.5,"opp":"NYK","verdict":"","judge":""},{"date":"2026-06-03","player":"Devin Vassell","prop":"PTS","side":"UNDER","line":13.5,"odds":-110,"actual":9.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"NYK","verdict":"","judge":""},{"date":"2026-05-20","player":"Shai Gilgeous-Alexander","prop":"REB","side":"UNDER","line":4.5,"odds":-151,"actual":4.0,"units":1.0,"result":"W","u_pnl":0.66,"opp":"SAS","verdict":"","judge":""},{"date":"2026-05-15","player":"Donovan Mitchell","prop":"AST","side":"UNDER","line":3.5,"odds":-106,"actual":3.0,"units":1.0,"result":"W","u_pnl":0.94,"opp":"DET","verdict":"","judge":""},{"date":"2026-05-13","player":"Jarrett Allen","prop":"REB","side":"UNDER","line":7.5,"odds":-131,"actual":10.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"DET","verdict":"","judge":""},{"date":"2026-05-11","player":"Jalen Duren","prop":"REB","side":"UNDER","line":10.5,"odds":-130,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.77,"opp":"CLE","verdict":"","judge":""},{"date":"2026-05-10","player":"Josh Hart","prop":"3PM","side":"UNDER","line":1.5,"odds":-151,"actual":4.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"PHI","verdict":"","judge":""},{"date":"2026-05-10","player":"Paul George","prop":"REB","side":"UNDER","line":5.5,"odds":-144,"actual":1.0,"units":1.0,"result":"W","u_pnl":0.69,"opp":"NYK","verdict":"","judge":""},{"date":"2026-05-10","player":"Josh Hart","prop":"PTS","side":"UNDER","line":12.5,"odds":-125,"actual":17.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"PHI","verdict":"","judge":""},{"date":"2026-05-09","player":"Jalen Duren","prop":"PTS","side":"UNDER","line":13.5,"odds":-110,"actual":11.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"CLE","verdict":"","judge":""},{"date":"2026-05-08","player":"Paul George","prop":"REB","side":"UNDER","line":5.5,"odds":-122,"actual":5.0,"units":1.0,"result":"W","u_pnl":0.82,"opp":"NYK","verdict":"","judge":""},{"date":"2026-05-07","player":"Jalen Duren","prop":"REB","side":"UNDER","line":11.5,"odds":-112,"actual":10.0,"units":1.0,"result":"W","u_pnl":0.89,"opp":"CLE","verdict":"","judge":""},{"date":"2026-05-07","player":"Jalen Duren","prop":"PTS","side":"UNDER","line":15.5,"odds":-121,"actual":8.0,"units":1.0,"result":"W","u_pnl":0.83,"opp":"CLE","verdict":"","judge":""},{"date":"2026-05-06","player":"Jordan Clarkson","prop":"3PM","side":"UNDER","line":0.5,"odds":-165,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.61,"opp":"PHI","verdict":"","judge":""},{"date":"2026-05-05","player":"Jalen Duren","prop":"REB","side":"UNDER","line":10.5,"odds":-115,"actual":12.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CLE","verdict":"","judge":""},{"date":"2026-05-04","player":"Paul George","prop":"REB","side":"UNDER","line":5.5,"odds":-149,"actual":3.0,"units":1.0,"result":"W","u_pnl":0.67,"opp":"NYK","verdict":"","judge":""},{"date":"2026-05-04","player":"Luke Kornet","prop":"REB","side":"OVER","line":3.5,"odds":-145,"actual":2.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"MIN","verdict":"","judge":""},{"date":"2026-05-02","player":"Paul George","prop":"REB","side":"UNDER","line":5.5,"odds":-147,"actual":3.0,"units":1.0,"result":"W","u_pnl":0.68,"opp":"BOS","verdict":"","judge":""},{"date":"2026-05-02","player":"Derrick White","prop":"PTS","side":"UNDER","line":11.5,"odds":-110,"actual":26.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"PHI","verdict":"","judge":""},{"date":"2026-04-30","player":"Jordan Clarkson","prop":"3PM","side":"UNDER","line":0.5,"odds":-134,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.75,"opp":"ATL","verdict":"","judge":""},{"date":"2026-04-30","player":"Paul George","prop":"REB","side":"UNDER","line":5.5,"odds":-118,"actual":4.0,"units":1.0,"result":"W","u_pnl":0.85,"opp":"BOS","verdict":"","judge":""},{"date":"2026-04-30","player":"Derrick White","prop":"PTS","side":"UNDER","line":11.5,"odds":-109,"actual":11.0,"units":1.0,"result":"W","u_pnl":0.92,"opp":"PHI","verdict":"","judge":""},{"date":"2026-04-30","player":"Jalen Johnson","prop":"PTS","side":"UNDER","line":20.5,"odds":-126,"actual":21.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"NYK","verdict":"","judge":""},{"date":"2026-04-29","player":"Jalen Duren","prop":"REB","side":"UNDER","line":10.5,"odds":-148,"actual":9.0,"units":1.0,"result":"W","u_pnl":0.68,"opp":"ORL","verdict":"","judge":""},{"date":"2026-04-28","player":"Jordan Clarkson","prop":"3PM","side":"UNDER","line":0.5,"odds":-121,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.83,"opp":"ATL","verdict":"","judge":""},{"date":"2026-04-28","player":"Derrick White","prop":"PTS","side":"UNDER","line":12.5,"odds":-118,"actual":6.0,"units":1.0,"result":"W","u_pnl":0.85,"opp":"PHI","verdict":"","judge":""},{"date":"2026-04-27","player":"Franz Wagner","prop":"PTS","side":"UNDER","line":18.5,"odds":-126,"actual":19.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"DET","verdict":"","judge":""},{"date":"2026-04-27","player":"Cade Cunningham","prop":"PTS","side":"UNDER","line":28.5,"odds":-109,"actual":25.0,"units":1.0,"result":"W","u_pnl":0.92,"opp":"ORL","verdict":"","judge":""},{"date":"2026-04-26","player":"Derrick White","prop":"PTS","side":"UNDER","line":13.5,"odds":-109,"actual":6.0,"units":1.0,"result":"W","u_pnl":0.92,"opp":"PHI","verdict":"","judge":""},{"date":"2026-04-25","player":"Jonathan Kuminga","prop":"REB","side":"UNDER","line":5.5,"odds":-152,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.66,"opp":"NYK","verdict":"","judge":""},{"date":"2026-04-25","player":"Wendell Carter Jr.","prop":"REB","side":"UNDER","line":7.5,"odds":-122,"actual":17.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"DET","verdict":"","judge":""},{"date":"2026-04-25","player":"Ayo Dosunmu","prop":"PTS","side":"OVER","line":12.5,"odds":-106,"actual":43.0,"units":1.0,"result":"W","u_pnl":0.94,"opp":"DEN","verdict":"","judge":""},{"date":"2026-04-25","player":"Cade Cunningham","prop":"PTS","side":"UNDER","line":27.5,"odds":-105,"actual":27.0,"units":1.0,"result":"W","u_pnl":0.95,"opp":"ORL","verdict":"","judge":""},{"date":"2026-04-24","player":"Jabari Smith Jr.","prop":"PTS","side":"OVER","line":15.5,"odds":-112,"actual":24.0,"units":1.0,"result":"W","u_pnl":0.89,"opp":"LAL","verdict":"","judge":""},{"date":"2026-04-23","player":"Ayo Dosunmu","prop":"PTS","side":"OVER","line":10.5,"odds":-123,"actual":25.0,"units":1.0,"result":"W","u_pnl":0.81,"opp":"DEN","verdict":"","judge":""},{"date":"2026-04-22","player":"Ausar Thompson","prop":"PTS","side":"UNDER","line":9.5,"odds":-108,"actual":11.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"ORL","verdict":"","judge":""},{"date":"2026-04-22","player":"Paolo Banchero","prop":"3PM","side":"UNDER","line":1.5,"odds":-110,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"DET","verdict":"","judge":""},{"date":"2026-04-22","player":"Wendell Carter Jr.","prop":"REB","side":"UNDER","line":7.5,"odds":-110,"actual":5.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"DET","verdict":"","judge":""},{"date":"2026-04-21","player":"Tyrese Maxey","prop":"PTS","side":"UNDER","line":26.5,"odds":-121,"actual":29.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"BOS","verdict":"","judge":""},{"date":"2026-04-20","player":"Ayo Dosunmu","prop":"PTS","side":"OVER","line":11.5,"odds":-125,"actual":9.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"DEN","verdict":"","judge":""},{"date":"2026-04-17","player":"Franz Wagner","prop":"REB","side":"UNDER","line":4.5,"odds":-148,"actual":7.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CHA","verdict":"","judge":""},{"date":"2026-04-17","player":"Paolo Banchero","prop":"PTS","side":"UNDER","line":23.5,"odds":-121,"actual":25.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CHA","verdict":"","judge":""},{"date":"2026-04-15","player":"Tyrese Maxey","prop":"PTS","side":"UNDER","line":29.5,"odds":-115,"actual":31.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"ORL","verdict":"","judge":""},{"date":"2026-04-15","player":"Wendell Carter Jr.","prop":"3PM","side":"UNDER","line":0.5,"odds":110,"actual":0.0,"units":1.0,"result":"W","u_pnl":1.1,"opp":"PHI","verdict":"","judge":""},{"date":"2026-04-14","player":"Mark Williams","prop":"REB","side":"UNDER","line":9.5,"odds":-127,"actual":4.0,"units":1.0,"result":"W","u_pnl":0.79,"opp":"POR","verdict":"","judge":""},{"date":"2026-04-12","player":"Tyrese Maxey","prop":"PTS","side":"UNDER","line":29.5,"odds":-167,"actual":21.0,"units":1.0,"result":"W","u_pnl":0.6,"opp":"MIL","verdict":"","judge":""},{"date":"2026-04-10","player":"Jalen Brunson","prop":"3PM","side":"UNDER","line":2.5,"odds":-137,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.73,"opp":"TOR","verdict":"","judge":""},{"date":"2026-04-10","player":"Toumani Camara","prop":"REB","side":"UNDER","line":5.5,"odds":-144,"actual":1.0,"units":1.0,"result":"W","u_pnl":0.69,"opp":"LAC","verdict":"","judge":""},{"date":"2026-04-10","player":"Josh Hart","prop":"AST","side":"UNDER","line":4.5,"odds":-134,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.75,"opp":"TOR","verdict":"","judge":""},{"date":"2026-04-10","player":"Scottie Barnes","prop":"REB","side":"UNDER","line":7.5,"odds":-130,"actual":4.0,"units":1.0,"result":"W","u_pnl":0.77,"opp":"NYK","verdict":"","judge":""},{"date":"2026-04-10","player":"Collin Sexton","prop":"PTS","side":"UNDER","line":22.5,"odds":-118,"actual":12.0,"units":1.0,"result":"W","u_pnl":0.85,"opp":"ORL","verdict":"","judge":""},{"date":"2026-04-09","player":"Josh Hart","prop":"AST","side":"UNDER","line":4.5,"odds":-151,"actual":3.0,"units":1.0,"result":"W","u_pnl":0.66,"opp":"BOS","verdict":"","judge":""},{"date":"2026-04-09","player":"Derrick White","prop":"PTS","side":"UNDER","line":15.5,"odds":-105,"actual":8.0,"units":1.0,"result":"W","u_pnl":0.95,"opp":"NYK","verdict":"","judge":""},{"date":"2026-04-08","player":"Dyson Daniels","prop":"AST","side":"UNDER","line":5.5,"odds":-146,"actual":6.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CLE","verdict":"","judge":""},{"date":"2026-04-08","player":"De'Aaron Fox","prop":"AST","side":"UNDER","line":6.5,"odds":-146,"actual":7.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"POR","verdict":"","judge":""},{"date":"2026-04-08","player":"Naz Reid","prop":"PTS","side":"UNDER","line":16.5,"odds":-125,"actual":15.0,"units":1.0,"result":"W","u_pnl":0.8,"opp":"ORL","verdict":"","judge":""},{"date":"2026-04-08","player":"Ousmane Dieng","prop":"3PM","side":"UNDER","line":1.5,"odds":110,"actual":4.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"DET","verdict":"","judge":""},{"date":"2026-04-07","player":"Ousmane Dieng","prop":"3PM","side":"UNDER","line":1.5,"odds":110,"actual":0.0,"units":1.0,"result":"W","u_pnl":1.1,"opp":"BKN","verdict":"","judge":""},{"date":"2026-04-07","player":"Kon Knueppel","prop":"PTS","side":"UNDER","line":17.5,"odds":-118,"actual":13.0,"units":1.0,"result":"W","u_pnl":0.85,"opp":"BOS","verdict":"","judge":""},{"date":"2026-04-06","player":"Jalen Brunson","prop":"3PM","side":"UNDER","line":2.5,"odds":-148,"actual":3.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"ATL","verdict":"","judge":""},{"date":"2026-04-06","player":"Dyson Daniels","prop":"AST","side":"UNDER","line":5.5,"odds":-141,"actual":3.0,"units":1.0,"result":"W","u_pnl":0.71,"opp":"NYK","verdict":"","judge":""},{"date":"2026-04-06","player":"Tyrese Maxey","prop":"PTS","side":"OVER","line":24.5,"odds":-110,"actual":15.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"SAS","verdict":"","judge":""},{"date":"2026-04-06","player":"Joel Embiid","prop":"PTS","side":"OVER","line":27.5,"odds":-110,"actual":34.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"SAS","verdict":"","judge":""},{"date":"2026-04-05","player":"RJ Barrett","prop":"REB","side":"OVER","line":5.5,"odds":-146,"actual":5.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"BOS","verdict":"","judge":""},{"date":"2026-04-05","player":"Donte DiVincenzo","prop":"AST","side":"UNDER","line":3.5,"odds":-151,"actual":3.0,"units":1.0,"result":"W","u_pnl":0.66,"opp":"CHA","verdict":"","judge":""},{"date":"2026-04-03","player":"Quenton Jackson","prop":"PTS","side":"UNDER","line":10.5,"odds":-120,"actual":16.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CHA","verdict":"","judge":""},{"date":"2026-04-03","player":"Derrick White","prop":"PTS","side":"UNDER","line":15.5,"odds":-116,"actual":17.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"MIL","verdict":"","judge":""},{"date":"2026-04-02","player":"Austin Reaves","prop":"AST","side":"OVER","line":4.5,"odds":-154,"actual":1.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"OKC","verdict":"","judge":""},{"date":"2026-04-02","player":"Kawhi Leonard","prop":"PTS","side":"OVER","line":27.5,"odds":-114,"actual":24.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"SAS","verdict":"","judge":""},{"date":"2026-04-02","player":"Evan Mobley","prop":"PTS","side":"OVER","line":16.5,"odds":-123,"actual":12.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"GSW","verdict":"","judge":""},{"date":"2026-04-02","player":"De'Aaron Fox","prop":"PTS","side":"UNDER","line":18.5,"odds":-121,"actual":22.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"LAC","verdict":"","judge":""},{"date":"2026-04-01","player":"Sam Hauser","prop":"3PM","side":"UNDER","line":2.5,"odds":-156,"actual":5.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"MIA","verdict":"","judge":""},{"date":"2026-04-01","player":"Victor Wembanyama","prop":"REB","side":"OVER","line":11.5,"odds":-138,"actual":18.0,"units":1.0,"result":"W","u_pnl":0.72,"opp":"GSW","verdict":"","judge":""},{"date":"2026-04-01","player":"Andrew Wiggins","prop":"PTS","side":"UNDER","line":14.5,"odds":-117,"actual":13.0,"units":1.0,"result":"W","u_pnl":0.85,"opp":"BOS","verdict":"","judge":""},{"date":"2026-03-31","player":"Jake LaRavia","prop":"PTS","side":"UNDER","line":7.5,"odds":-119,"actual":14.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CLE","verdict":"","judge":""},{"date":"2026-03-31","player":"Scottie Barnes","prop":"REB","side":"UNDER","line":7.5,"odds":-110,"actual":1.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"DET","verdict":"","judge":""},{"date":"2026-03-30","player":"James Harden","prop":"REB","side":"OVER","line":4.5,"odds":-142,"actual":6.0,"units":1.0,"result":"W","u_pnl":0.7,"opp":"UTA","verdict":"","judge":""},{"date":"2026-03-30","player":"Onyeka Okongwu","prop":"PTS","side":"UNDER","line":13.5,"odds":-110,"actual":20.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"BOS","verdict":"","judge":""},{"date":"2026-03-29","player":"Karl-Anthony Towns","prop":"REB","side":"OVER","line":10.5,"odds":-110,"actual":18.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"OKC","verdict":"","judge":""},{"date":"2026-03-29","player":"Jayson Tatum","prop":"PTS","side":"UNDER","line":23.5,"odds":-110,"actual":32.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CHA","verdict":"","judge":""},{"date":"2026-03-28","player":"Dylan Cardwell","prop":"REB","side":"OVER","line":6.5,"odds":-109,"actual":7.0,"units":1.0,"result":"W","u_pnl":0.92,"opp":"ATL","verdict":"","judge":""},{"date":"2026-03-28","player":"Naz Reid","prop":"PTS","side":"UNDER","line":15.5,"odds":-110,"actual":8.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"DET","verdict":"","judge":""},{"date":"2026-03-27","player":"Aaron Nesmith","prop":"REB","side":"UNDER","line":3.5,"odds":-110,"actual":7.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"LAC","verdict":"","judge":""},{"date":"2026-03-27","player":"Matas Buzelis","prop":"REB","side":"OVER","line":5.5,"odds":-110,"actual":9.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"OKC","verdict":"","judge":""},{"date":"2026-03-27","player":"Jake LaRavia","prop":"PTS","side":"UNDER","line":7.5,"odds":-110,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"BKN","verdict":"","judge":""},{"date":"2026-03-27","player":"Tre Jones","prop":"PTS","side":"OVER","line":12.5,"odds":-110,"actual":21.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"OKC","verdict":"","judge":""},{"date":"2026-03-27","player":"Onyeka Okongwu","prop":"PTS","side":"UNDER","line":13.5,"odds":-110,"actual":8.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"BOS","verdict":"","judge":""},{"date":"2026-03-26","player":"Mikal Bridges","prop":"PTS","side":"UNDER","line":13.5,"odds":-110,"actual":14.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CHA","verdict":"","judge":""},{"date":"2026-03-26","player":"Karl-Anthony Towns","prop":"REB","side":"OVER","line":10.5,"odds":-110,"actual":3.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CHA","verdict":"","judge":""},{"date":"2026-03-26","player":"DeMar DeRozan","prop":"3PM","side":"UNDER","line":0.5,"odds":-110,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"ORL","verdict":"","judge":""},{"date":"2026-03-26","player":"Miles Bridges","prop":"PTS","side":"UNDER","line":14.5,"odds":-110,"actual":17.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"NYK","verdict":"","judge":""},{"date":"2026-03-25","player":"Jamal Shead","prop":"REB","side":"UNDER","line":2.5,"odds":-114,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.88,"opp":"LAC","verdict":"","judge":""},{"date":"2026-03-25","player":"Peyton Watson","prop":"REB","side":"OVER","line":3.5,"odds":-110,"actual":4.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"DAL","verdict":"","judge":""},{"date":"2026-03-25","player":"Tari Eason","prop":"3PM","side":"UNDER","line":0.5,"odds":-110,"actual":1.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"MIN","verdict":"","judge":""},{"date":"2026-03-25","player":"CJ McCollum","prop":"3PM","side":"UNDER","line":2.5,"odds":-110,"actual":5.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-25","player":"Deni Avdija","prop":"PTS","side":"UNDER","line":24.5,"odds":-110,"actual":18.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"MIL","verdict":"","judge":""},{"date":"2026-03-24","player":"Donovan Mitchell","prop":"PTS","side":"UNDER","line":27.5,"odds":-110,"actual":42.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"ORL","verdict":"","judge":""},{"date":"2026-03-23","player":"Matas Buzelis","prop":"REB","side":"OVER","line":5.5,"odds":-122,"actual":4.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"HOU","verdict":"","judge":""},{"date":"2026-03-23","player":"RJ Barrett","prop":"REB","side":"UNDER","line":6.5,"odds":-147,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.68,"opp":"UTA","verdict":"","judge":""},{"date":"2026-03-23","player":"Victor Wembanyama","prop":"REB","side":"UNDER","line":12.5,"odds":-133,"actual":15.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"MIA","verdict":"","judge":""},{"date":"2026-03-23","player":"Chet Holmgren","prop":"REB","side":"OVER","line":7.5,"odds":-110,"actual":9.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"PHI","verdict":"","judge":""},{"date":"2026-03-23","player":"Pascal Siakam","prop":"PTS","side":"OVER","line":20.5,"odds":-110,"actual":37.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"ORL","verdict":"","judge":""},{"date":"2026-03-23","player":"Deni Avdija","prop":"PTS","side":"UNDER","line":25.5,"odds":-110,"actual":18.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"BKN","verdict":"","judge":""},{"date":"2026-03-22","player":"Donovan Clingan","prop":"REB","side":"OVER","line":10.5,"odds":-139,"actual":13.0,"units":1.0,"result":"W","u_pnl":0.72,"opp":"DEN","verdict":"","judge":""},{"date":"2026-03-22","player":"Jayson Tatum","prop":"PTS","side":"UNDER","line":22.5,"odds":-116,"actual":16.0,"units":1.0,"result":"W","u_pnl":0.86,"opp":"MIN","verdict":"","judge":""},{"date":"2026-03-22","player":"Jalen Green","prop":"3PM","side":"UNDER","line":3.5,"odds":-110,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"TOR","verdict":"","judge":""},{"date":"2026-03-22","player":"Donte DiVincenzo","prop":"PTS","side":"UNDER","line":13.5,"odds":-110,"actual":8.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"BOS","verdict":"","judge":""},{"date":"2026-03-21","player":"Walter Clayton Jr.","prop":"3PM","side":"UNDER","line":1.5,"odds":-166,"actual":3.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"CHA","verdict":"","judge":""},{"date":"2026-03-21","player":"Chet Holmgren","prop":"REB","side":"OVER","line":7.5,"odds":-139,"actual":10.0,"units":1.0,"result":"W","u_pnl":0.72,"opp":"WAS","verdict":"","judge":""},{"date":"2026-03-21","player":"Alperen Sengun","prop":"PTS","side":"UNDER","line":18.5,"odds":-110,"actual":19.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"MIA","verdict":"","judge":""},{"date":"2026-03-21","player":"Taylor Hendricks","prop":"REB","side":"UNDER","line":5.5,"odds":-110,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-21","player":"Tari Eason","prop":"PTS","side":"UNDER","line":10.5,"odds":-110,"actual":7.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"MIA","verdict":"","judge":""},{"date":"2026-03-20","player":"Mikal Bridges","prop":"3PM","side":"UNDER","line":1.5,"odds":-110,"actual":1.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"BKN","verdict":"","judge":""},{"date":"2026-03-20","player":"Jordan Clarkson","prop":"3PM","side":"UNDER","line":1.5,"odds":-110,"actual":1.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"BKN","verdict":"","judge":""},{"date":"2026-03-20","player":"Deni Avdija","prop":"PTS","side":"UNDER","line":23.5,"odds":-110,"actual":25.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"MIN","verdict":"","judge":""},{"date":"2026-03-20","player":"Dyson Daniels","prop":"REB","side":"OVER","line":5.5,"odds":-110,"actual":3.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"HOU","verdict":"","judge":""},{"date":"2026-03-19","player":"Kel'el Ware","prop":"3PM","side":"OVER","line":0.5,"odds":-214,"actual":0.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"LAL","verdict":"","judge":""},{"date":"2026-03-19","player":"Tre Jones","prop":"AST","side":"UNDER","line":5.5,"odds":-154,"actual":3.0,"units":1.0,"result":"W","u_pnl":0.65,"opp":"CLE","verdict":"","judge":""},{"date":"2026-03-19","player":"Trendon Watford","prop":"3PM","side":"UNDER","line":0.5,"odds":-110,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Jerami Grant","prop":"PTS","side":"OVER","line":17.5,"odds":-110,"actual":8.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Baylor Scheierman","prop":"PTS","side":"OVER","line":6.5,"odds":-110,"actual":3.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Derrick White","prop":"PTS","side":"OVER","line":16.5,"odds":-110,"actual":11.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Trey Murphy III","prop":"AST","side":"OVER","line":3.5,"odds":-110,"actual":5.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Isaiah Collier","prop":"PTS","side":"OVER","line":16.5,"odds":-110,"actual":14.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Kawhi Leonard","prop":"PTS","side":"OVER","line":28.5,"odds":-110,"actual":25.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Trey Murphy III","prop":"PTS","side":"UNDER","line":21.5,"odds":-110,"actual":23.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Patrick Williams","prop":"PTS","side":"OVER","line":5.5,"odds":-110,"actual":7.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Jonathan Kuminga","prop":"REB","side":"OVER","line":5.5,"odds":-110,"actual":5.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Zaccharie Risacher","prop":"REB","side":"OVER","line":3.5,"odds":-110,"actual":6.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Kyle Filipowski","prop":"PTS","side":"OVER","line":12.5,"odds":-110,"actual":7.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Olivier-Maxence Prosper","prop":"PTS","side":"OVER","line":10.5,"odds":-110,"actual":19.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Amen Thompson","prop":"PTS","side":"OVER","line":17.5,"odds":-110,"actual":26.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Darius Garland","prop":"PTS","side":"OVER","line":20.5,"odds":-110,"actual":13.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Jarace Walker","prop":"3PM","side":"UNDER","line":2.5,"odds":-110,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Tre Jones","prop":"AST","side":"UNDER","line":5.5,"odds":-110,"actual":5.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Chet Holmgren","prop":"3PM","side":"UNDER","line":1.5,"odds":-110,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Ajay Mitchell","prop":"3PM","side":"UNDER","line":1.5,"odds":-110,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Sam Hauser","prop":"REB","side":"OVER","line":3.5,"odds":-110,"actual":0.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Matas Buzelis","prop":"REB","side":"OVER","line":5.5,"odds":-110,"actual":7.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-18","player":"Dyson Daniels","prop":"REB","side":"OVER","line":6.5,"odds":-110,"actual":6.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-17","player":"DeMar DeRozan","prop":"3PM","side":"UNDER","line":0.5,"odds":-143,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.7,"opp":"","verdict":"","judge":""},{"date":"2026-03-17","player":"Jamir Watkins","prop":"REB","side":"UNDER","line":4.5,"odds":102,"actual":2.0,"units":1.0,"result":"W","u_pnl":1.02,"opp":"","verdict":"","judge":""},{"date":"2026-03-17","player":"Karl-Anthony Towns","prop":"REB","side":"OVER","line":11.5,"odds":103,"actual":11.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-17","player":"Mikal Bridges","prop":"3PM","side":"UNDER","line":1.5,"odds":-110,"actual":2.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-17","player":"Landry Shamet","prop":"3PM","side":"UNDER","line":2.5,"odds":-110,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-17","player":"Kel'el Ware","prop":"PTS","side":"UNDER","line":13.5,"odds":-110,"actual":7.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Tristan da Silva","prop":"3PM","side":"OVER","line":1.5,"odds":-110,"actual":1.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Toumani Camara","prop":"AST","side":"OVER","line":1.5,"odds":-110,"actual":2.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Reed Sheppard","prop":"PTS","side":"OVER","line":14.5,"odds":-110,"actual":11.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Dyson Daniels","prop":"3PM","side":"UNDER","line":0.5,"odds":-110,"actual":0.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"De'Anthony Melton","prop":"3PM","side":"OVER","line":1.5,"odds":-110,"actual":0.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Reed Sheppard","prop":"3PM","side":"OVER","line":2.5,"odds":-110,"actual":1.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Jerami Grant","prop":"PTS","side":"OVER","line":18.5,"odds":-110,"actual":12.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Dyson Daniels","prop":"REB","side":"OVER","line":6.5,"odds":-110,"actual":12.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Jaxson Hayes","prop":"REB","side":"OVER","line":3.5,"odds":-110,"actual":0.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Guerschon Yabusele","prop":"REB","side":"OVER","line":4.5,"odds":-110,"actual":0.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Sam Hauser","prop":"REB","side":"OVER","line":3.5,"odds":-110,"actual":4.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Luke Kennard","prop":"PTS","side":"OVER","line":6.5,"odds":-110,"actual":0.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Zaccharie Risacher","prop":"REB","side":"OVER","line":3.5,"odds":-110,"actual":2.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Nick Richards","prop":"REB","side":"OVER","line":7.5,"odds":-110,"actual":6.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Tristan da Silva","prop":"REB","side":"OVER","line":4.5,"odds":-110,"actual":2.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Deni Avdija","prop":"PTS","side":"UNDER","line":22.5,"odds":-110,"actual":18.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Nick Richards","prop":"PTS","side":"OVER","line":9.5,"odds":-110,"actual":5.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Baylor Scheierman","prop":"PTS","side":"OVER","line":5.5,"odds":-110,"actual":8.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Amen Thompson","prop":"PTS","side":"OVER","line":19.5,"odds":-110,"actual":19.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Toumani Camara","prop":"PTS","side":"UNDER","line":12.5,"odds":-110,"actual":18.0,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-16","player":"Keldon Johnson","prop":"REB","side":"UNDER","line":5.5,"odds":-110,"actual":5.0,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-15","player":"Scottie Barnes","prop":"PTS","side":"OVER","line":16.5,"odds":-110,"actual":null,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-15","player":"Jerami Grant","prop":"REB","side":"OVER","line":3.5,"odds":-110,"actual":null,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-15","player":"Ausar Thompson","prop":"AST","side":"OVER","line":2.5,"odds":-110,"actual":null,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-15","player":"Cade Cunningham","prop":"REB","side":"OVER","line":5.5,"odds":-110,"actual":null,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-15","player":"Russell Westbrook","prop":"REB","side":"OVER","line":4.5,"odds":-110,"actual":null,"units":1.0,"result":"P","u_pnl":0.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-14","player":"John Collins","prop":"REB","side":"OVER","line":5.5,"odds":-110,"actual":null,"units":1.0,"result":"P","u_pnl":0.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-14","player":"De'Aaron Fox","prop":"PTS","side":"OVER","line":18.5,"odds":-110,"actual":null,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-14","player":"Tim Hardaway Jr.","prop":"PTS","side":"OVER","line":10.5,"odds":-110,"actual":null,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-14","player":"Corey Kispert","prop":"PTS","side":"OVER","line":7.5,"odds":-110,"actual":null,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-13","player":"Cade Cunningham","prop":"REB","side":"OVER","line":5.5,"odds":-110,"actual":null,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-13","player":"Jaylen Wells","prop":"REB","side":"OVER","line":2.5,"odds":-110,"actual":null,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-12","player":"Corey Kispert","prop":"PTS","side":"OVER","line":7.5,"odds":-110,"actual":null,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-12","player":"Cam Spencer","prop":"3PM","side":"OVER","line":1.5,"odds":-110,"actual":null,"units":1.0,"result":"P","u_pnl":0.0,"opp":"","verdict":"","judge":""},{"date":"2026-03-12","player":"VJ Edgecombe","prop":"REB","side":"OVER","line":4.5,"odds":-110,"actual":null,"units":1.0,"result":"W","u_pnl":0.91,"opp":"","verdict":"","judge":""},{"date":"2026-03-12","player":"De'Aaron Fox","prop":"PTS","side":"OVER","line":18.5,"odds":-110,"actual":null,"units":1.0,"result":"L","u_pnl":-1.0,"opp":"","verdict":"","judge":""}],"lines_per_night":1392,"books":7,"writeups_from":"2026-10-20","debate_gates":false};
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const signU = (v, dp=2) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(dp) + 'u';
+const uCls  = v => v > 0 ? 'g' : v < 0 ? 'r' : 'm';
+const odds  = o => o > 0 ? `+${o}` : `${o}`;
+const pDate = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const fDate = (s, o={month:'short', day:'numeric'}) => pDate(s).toLocaleDateString('en-US', o);
+const etToday = () => new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York'}).format(new Date());
+const book = b => b || 'consensus';      // the data carries each book's display name
+const fDay  = s => fDate(s, {month:'short', day:'numeric', year:'numeric'});
+function initials(n){ const p = String(n||'').replace(/\b(Jr|Sr|II|III|IV)\b\.?/g,'').trim().split(/\s+/); return ((p[0]||'')[0] + ((p.length>1?p[p.length-1]:'')[0]||'')).toUpperCase(); }
+function hue(n){ let h = 0; for(const c of String(n)) h = (h*31 + c.charCodeAt(0)) % 360; return h; }
+const safeUrl = u => /^https:\/\//i.test(u||'') ? u : '';
+// A player's headshot over his initials. `src` is only in the data when
+// headshots are switched on in public_site.json; without it, or if the photo
+// does not load, the initials stay. The photo is fetched without a referrer.
+const avatar = (n, sm, src) => `<span class="avatar${sm?' sm':''}" style="--h:${hue(n)}">${esc(initials(n))}${safeUrl(src) ? `<img src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()">` : ''}</span>`;
+// A team's logo, or its abbreviation as text when there is no logo or it does
+// not load. Nothing at all unless team logos are switched on.
+const teamLogo = h => safeUrl(h.logo) ? `<img class="tlogo" src="${esc(h.logo)}" alt="${esc(h.team)}" title="${esc(h.team)}" loading="lazy" referrerpolicy="no-referrer" onerror="logoText(this)">`
+                    : h.team ? `<span class="tabbr">${esc(h.team)}</span>` : '';
+function logoText(img){
+  const s = document.createElement('span');
+  s.className = 'tabbr'; s.textContent = img.alt;
+  img.replaceWith(s);
+}
+
+function countUp(el, to, fmt, dur=1400){
+  if(REDUCED){ el.textContent = fmt(to); return; }
+  const t0 = performance.now();
+  const step = now => { const k = Math.min(1, (now-t0)/dur), e = 1 - Math.pow(1-k, 4); el.textContent = fmt(to*e); if(k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function niceTicks(lo, hi, n){
+  const raw = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1,2,2.5,5,10].map(m => m*mag).find(s => s >= raw);
+  const out = []; for(let v = Math.ceil(lo/step)*step; v <= hi + 1e-9; v += step) out.push(Math.round(v*1e6)/1e6);
+  return out;
+}
+
+if(!D){
+  document.querySelector('main').innerHTML = '<div class="wrap empty" style="padding:80px 0">This page is a template. Build it with <b>python export_public.py</b>.</div>';
+  throw new Error('no data');
+}
+const R = D.record, H = D.history, T = D.today;
+
+// ── discord links: the top-bar placeholder becomes the Join button once there is an invite ──
+const invite = safeUrl(D.site.discord_invite);
+if(invite){
+  const top = $('#discordTop');
+  top.href = invite; top.classList.remove('soon');
+  top.removeAttribute('aria-disabled'); top.removeAttribute('title');
+  $('.wide', top).textContent = 'Join the Discord'; $('.tight', top).textContent = 'Join';
+  $('#discordCta').href = invite;
+}
+
+// ══ HERO ══
+(function hero(){
+  const el = $('#heroUnits');
+  el.classList.add(R.units >= 0 ? 'pos' : 'neg');
+  const fmt = v => (R.units >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+  el.innerHTML = `<span id="heroNum">${fmt(R.units)}</span><small>u</small>`;
+  countUp($('#heroNum'), R.units, fmt);
+  $('#heroSub').innerHTML = (R.since
+    ? `Units won all-time, since <b>${fDay(R.since)}</b>, counting every pick posted to Discord, wins and losses alike.`
+    : 'The record starts with the first posted pick.') + ' One unit (1u) is one standard stake.';
+  // The streak is this season's, so it is shown only once this season has a pick.
+  const chips = [
+    ['Record',   `${R.wins}–${R.losses}${R.pushes ? '–' + R.pushes : ''}`],
+    ['Hit rate', `${R.hit_rate}%`],
+    ['ROI',      `<span class="${uCls(R.roi)}">${R.roi > 0 ? '+' : ''}${R.roi}%</span>`],
+  ];
+  if(R.streak.n) chips.push(['Streak', `${R.streak.type === 'W' ? '🔥' : '🧊'} ${R.streak.type}${R.streak.n}`]);
+  $('#heroChips').innerHTML = chips.map(([k,v]) => `<div class="chip"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+  // One row a season, newest first, once there is more than one to tell apart.
+  if(R.seasons.length > 1) $('#heroSeasons').innerHTML = [...R.seasons].reverse().map(s => {
+    const n = s.wins + s.losses + s.pushes;
+    return `<div class="srow"><span class="sn">${esc(s.season)}</span>` + (n
+      ? `<span class="sr">${s.wins}–${s.losses}${s.pushes ? '–' + s.pushes : ''} · ${esc(fDate(s.since))} to ${esc(fDate(s.last))}</span><span class="su ${uCls(s.units)}">${signU(s.units)}</span>`
+      : `<span class="sr">starts with the first card</span><span class="su m">—</span>`) + '</div>';
+  }).join('');
+
+  // faint cumulative line behind the number
+  const svg = $('#heroSpark'), dd = D.daily;
+  if(dd.length > 1){
+    const W = 600, Hh = 200, vals = [0, ...dd.map(d => d.cum)];
+    const mn = Math.min(...vals), mx = Math.max(...vals), sp = (mx - mn) || 1;
+    const pts = vals.map((v,i) => `${(i/(vals.length-1)*W).toFixed(1)},${(Hh - 10 - (v-mn)/sp*(Hh-30)).toFixed(1)}`);
+    const col = R.units >= 0 ? '#22c55e' : '#ef4444';
+    svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
+    svg.innerHTML = `<defs><linearGradient id="hs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".28"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+      <polygon class="fade" points="0,${Hh} ${pts.join(' ')} ${W},${Hh}" fill="url(#hs)"/>
+      <polyline class="draw" pathLength="1" points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+  }
+})();
+
+// ══ TONIGHT ══
+// `done` is what takes the countdown's place once it reaches zero.
+const afterCountdown = done => `<p class="mono after-cd">${esc(done)}</p>`;
+function countdown(target, labels, done){
+  if(Date.parse(target) <= Date.now()) return afterCountdown(done);
+  return `<div class="countdown" data-target="${target}" data-done="${esc(done)}">${labels.map(l => `<div class="cd"><b>--</b><span>${l}</span></div>`).join('')}</div>`;
+}
+function tickCountdowns(){
+  $$('.countdown').forEach(el => {
+    let s = Math.max(0, Math.floor((Date.parse(el.dataset.target) - Date.now()) / 1000));
+    if(!s){ el.outerHTML = afterCountdown(el.dataset.done); return; }
+    const boxes = $$('b', el);
+    const parts = boxes.length === 3 ? [Math.floor(s/3600), Math.floor(s%3600/60), s%60]
+                                     : [Math.floor(s/86400), Math.floor(s%86400/3600), Math.floor(s%3600/60), s%60];
+    boxes.forEach((b,i) => b.textContent = String(parts[i]).padStart(2,'0'));
+  });
+  $$('[data-tip]').forEach(el => {
+    const t = Date.parse(el.dataset.tip), now = Date.now();
+    if(!t) return;
+    if(now >= t){ el.textContent = now - t < 3.2*3600e3 ? '● Game on' : 'Final'; el.classList.add('live'); return; }
+    const m = Math.round((t - now) / 60000);
+    el.textContent = m >= 60 ? `Tips in ${Math.floor(m/60)}h ${m%60}m` : `Tips in ${m}m`;
+  });
+}
+const ballHTML = '<span class="ball-wrap"><span class="ball"></span><i></i></span>';
+const tipTime = iso => iso ? new Date(iso).toLocaleTimeString([], {hour:'numeric', minute:'2-digit', timeZoneName:'short'}) : '';
+
+function verdictTag(v){
+  return v === 'UPGRADE' ? '<span class="tag up">▲ Upgraded by the Judge</span>'
+       : v === 'CONFIRM' ? '<span class="tag ok">✓ Judge confirmed</span>'
+       : v === 'DOWNGRADE' ? '<span class="tag dn">▼ Downgraded</span>' : '';
+}
+const pickText = p => `${p.player} ${p.side} ${p.line} ${p.prop} (${odds(p.odds)} ${book(p.book)})`;
+
+function renderTonight(){
+  const body = $('#tonightBody'), stale = T.date !== etToday();
+  const dayLbl = fDate(T.date, {weekday:'short', month:'short', day:'numeric'});
+  $('#tonightNote').textContent = dayLbl.toUpperCase();
+
+  if(T.status === 'posted' && T.picks.length){
+    $('#tonightTitle').textContent = stale ? 'Latest card' : "Tonight's card";
+    const resultOf = p => H.find(h => h.date === T.date && h.player === p.player && h.prop === p.prop);
+    const graded = T.picks.every(resultOf);
+    const staleNote = stale ? `<span class="stale">Posted ${esc(dayLbl)} · ${graded ? 'final results' : 'results land in the receipts'}</span>` : '';
+    body.innerHTML = `
+      <div class="slate-bar">
+        <span class="m mono" style="font-size:12px">${T.picks.length} pick${T.picks.length>1?'s':''} · ${T.games} game${T.games===1?'':'s'} on the slate</span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${staleNote}<button class="btn" id="shareSlate">↗ Share the card</button></span>
+      </div>
+      <div class="picks stag">${T.picks.map((p,i) => {
+        const side = p.side === 'OVER' ? 'over' : 'under';
+        return `<article class="pick${i===0?' top':''}"><div class="pick-in">
+          <div class="pick-head">
+            <span class="rank">#${p.rank}</span>${avatar(p.player, false, p.img)}
+            <div class="who"><b>${esc(p.player)}</b><span>${teamLogo(p)}${esc(p.matchup || '')}${p.matchup && p.tip ? ' · ' : ''}${esc(tipTime(p.tip))}</span></div>
+            <div class="stake"><b>${p.units ? p.units + 'u' : '—'}</b><div class="bar"><i style="width:${Math.min(100, (p.units||0)/3*100)}%"></i></div></div>
+          </div>
+          <div class="play">
+            <span class="bet"><span class="${side}">${esc(p.side)}</span> ${esc(p.line)} ${esc(p.prop)}</span>
+            <span class="price">${odds(p.odds)}<em>${esc(book(p.book))}</em></span>
+          </div>
+          <div class="tags">
+            ${(r => r ? `<span class="tag ${r.result}">${r.result === 'W' ? '✓ Won' : r.result === 'L' ? '✗ Lost' : 'Push'} · ${r.actual != null ? esc(+r.actual) + ' ' + esc(p.prop) + ' · ' : ''}${signU(r.u_pnl)}</span>` : '')(stale && resultOf(p))}
+            ${verdictTag(p.verdict)}
+            ${p.proj != null ? `<span class="tag">Model proj ${(+p.proj).toFixed(1)}</span>` : ''}
+            ${p.tip && !stale ? `<span class="tag" data-tip="${esc(p.tip)}"></span>` : ''}
+          </div>
+          ${p.judge ? `<details class="judge"${i===0?' open':''}><summary><span class="chev">▶</span>The Judge's take</summary><p>${esc(p.judge)}</p></details>` : ''}
+          <div class="pick-actions"><button class="btn" data-copy="${esc(pickText(p))}">⧉ Copy pick</button></div>
+        </div></article>`;
+      }).join('')}</div>`;
+    $('#shareSlate').onclick = () => share(`${D.site.name}: ${dayLbl}\n` + T.picks.map(p => '• ' + pickText(p)).join('\n'));
+  } else if(T.status === 'offseason' && T.opening_night){
+    $('#tonightTitle').textContent = 'The off-season';
+    body.innerHTML = `<div class="card status-card">${ballHTML}
+      <h3>The ${esc(T.next_season || T.season)} season tips off ${esc(fDate(T.opening_night, {weekday:'short', month:'short', day:'numeric'}))}</h3>
+      <p>The bot is resting between seasons. It starts recording lines on opening night${T.first_card ? `, and the first card is expected around ${esc(fDate(T.first_card))}, once players have a couple of weeks of games on the board` : ''}.</p>
+      ${countdown(pDate(T.opening_night).toISOString(), ['days','hrs','min','sec'], 'Opening night is here.')}</div>`;
+  } else if(T.status === 'warming_up'){
+    // The opening weeks. Shown whatever day the page was built: it stays true until the first card.
+    $('#tonightTitle').textContent = 'Warming up';
+    const w = T.warmup || {}, need = w.need || 8, played = Math.min(need, w.played || 0);
+    body.innerHTML = `<div class="card status-card">${ballHTML}
+      <h3>${T.first_card && T.first_card > etToday() ? `The first card is expected around ${esc(fDate(T.first_card))}` : 'The first card is close'}</h3>
+      <p>The model projects a player only once he has ${need} games this season, so there are no picks in the opening weeks. Lines are being recorded every game night in the meantime.</p>
+      <div class="warm"><div class="bar"><i style="width:${played/need*100}%"></i></div>
+        <div class="lbl">${played ? `Most games by any player so far: ${played} of ${need}` : `No player has a game on the board yet: 0 of ${need}`}</div></div></div>`;
+  } else if(T.status === 'pending' && !stale){
+    const drop = T.first_tip ? new Date(Date.parse(T.first_tip) - 45*60e3) : null;      // when the posting run starts
+    body.innerHTML = `<div class="card status-card">${ballHTML}
+      <h3>Tonight's card is cooking</h3>
+      <p>${T.games} game${T.games===1?'':'s'} on the slate. The card is posted about half an hour before the first tip${T.first_tip ? ` (${esc(tipTime(T.first_tip))})` : ''}.</p>
+      ${drop ? countdown(drop.toISOString(), ['hrs','min','sec'], 'Any minute now…') : ''}</div>`;
+  } else {
+    const noGames = T.status === 'no_games';
+    body.innerHTML = `<div class="card status-card">${ballHTML}
+      <h3>${stale ? 'No card posted today yet' : noGames ? 'No games tonight' : 'No plays tonight'}</h3>
+      <p>${stale ? 'Check back closer to tip-off.' : noGames ? "The league is off tonight. We're back next game day." : 'Nothing cleared the bar tonight. Passing is part of the strategy.'}</p></div>`;
+  }
+  if(invite) $('#cta').classList.add('show');
+}
+
+async function copyText(txt){
+  try { await navigator.clipboard.writeText(txt); return true; }
+  catch(e){
+    const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch(_){}
+    ta.remove(); return ok;
+  }
+}
+async function share(txt){
+  const btn = $('#shareSlate');
+  if(navigator.share){ try { await navigator.share({title:D.site.name, text:txt, url:location.href}); return; } catch(e){ if(e.name === 'AbortError') return; } }
+  if(await copyText(txt + '\n' + location.href)) flash(btn, '✓ Copied');
+}
+function flash(btn, msg){
+  const old = btn.innerHTML; btn.innerHTML = msg; btn.classList.add('done');
+  setTimeout(() => { btn.innerHTML = old; btn.classList.remove('done'); }, 1600);
+}
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-copy]'); if(!b) return;
+  if(await copyText(b.dataset.copy)) flash(b, '✓ Copied');
+});
+
+// ══ RESULTS ══
+function renderTiles(){
+  const dd = D.daily;
+  const best = dd.reduce((a,d) => !a || d.units > a.units ? d : a, null);
+  const worst = dd.reduce((a,d) => !a || d.units < a.units ? d : a, null);
+  const winDays = dd.filter(d => d.units > 0).length;
+  $('#tiles').innerHTML = [
+    ['Best slate',   best ? `<span class="g">${signU(best.units)}</span>` : '—', best ? fDate(best.date) + ` · ${best.w}–${best.l}` : ''],
+    ['Worst slate',  worst ? `<span class="r">${signU(worst.units)}</span>` : '—', worst ? fDate(worst.date) + ` · ${worst.w}–${worst.l}` : ''],
+    ['Winning days', `${winDays}/${dd.length}`, dd.length ? `${Math.round(winDays/dd.length*100)}% of slates` : ''],
+    ['Longest heater', `${R.best_run}W`, 'straight wins'],
+  ].map(([k,v,s]) => `<div class="card tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+}
+
+let chartRange = 'all';
+function rangeDaily(){
+  if(chartRange === 'all' || !D.daily.length) return D.daily.map(d => ({...d}));
+  const last = pDate(D.daily[D.daily.length-1].date), cut = new Date(last - (+chartRange)*864e5);
+  let cum = 0;
+  return D.daily.filter(d => pDate(d.date) > cut).map(d => ({...d, cum: (cum += d.units, Math.round(cum*100)/100)}));
+}
+function renderChart(animate){
+  const host = $('#chart'), W = host.clientWidth, Hh = host.clientHeight;
+  if(!W) return;
+  const dd = rangeDaily();
+  const total = dd.reduce((s,d) => s + d.units, 0);
+  $('#rangeUnits').innerHTML = `<span class="${uCls(total)}">${signU(total)}</span>`;
+  if(dd.length < 2){ host.innerHTML = '<div class="empty">Not enough slates in this range yet.</div>'; return; }
+  const pts = [{date:null, cum:0}, ...dd], n = pts.length;
+  const pl = 44, pr = 8, pt = 10, pb = 24;
+  let mn = Math.min(...pts.map(p => p.cum), 0), mx = Math.max(...pts.map(p => p.cum), 0);
+  const sp = (mx - mn) || 1; mn -= sp*.08; mx += sp*.08;
+  const X = i => pl + i/(n-1)*(W-pl-pr), Y = v => pt + (mx - v)/(mx - mn)*(Hh-pt-pb);
+  const zy = Y(0), f = Math.max(0, Math.min(1, (zy-pt)/(Hh-pt-pb)));
+  const line = pts.map((p,i) => `${i?'L':'M'}${X(i).toFixed(1)},${Y(p.cum).toFixed(1)}`).join('');
+  const area = `${line}L${X(n-1).toFixed(1)},${zy.toFixed(1)}L${X(0).toFixed(1)},${zy.toFixed(1)}Z`;
+  const ticks = niceTicks(mn, mx, 4);
+  const lab = [1, Math.floor(n/2), n-1];
+  const a = animate && !REDUCED;
+  host.innerHTML = `<svg width="${W}" height="${Hh}">
+    <defs>
+      <linearGradient id="cs" gradientUnits="userSpaceOnUse" x1="0" y1="${pt}" x2="0" y2="${Hh-pb}"><stop offset="0" stop-color="#34d466"/><stop offset="${f}" stop-color="#22c55e"/><stop offset="${f}" stop-color="#ef4444"/><stop offset="1" stop-color="#f87171"/></linearGradient>
+      <linearGradient id="cf" gradientUnits="userSpaceOnUse" x1="0" y1="${pt}" x2="0" y2="${Hh-pb}"><stop offset="0" stop-color="#22c55e" stop-opacity=".25"/><stop offset="${f}" stop-color="#22c55e" stop-opacity="0"/><stop offset="${f}" stop-color="#ef4444" stop-opacity="0"/><stop offset="1" stop-color="#ef4444" stop-opacity=".25"/></linearGradient>
+    </defs>
+    ${ticks.map(t => `<line x1="${pl}" x2="${W-pr}" y1="${Y(t)}" y2="${Y(t)}" stroke="rgba(255,255,255,${t===0?.16:.04})" ${t===0?'stroke-dasharray="4,4"':''}/>
+      <text x="${pl-8}" y="${Y(t)+3.5}" text-anchor="end" fill="#6a6a84" font-family="IBM Plex Mono" font-size="10">${t>0?'+':''}${t}u</text>`).join('')}
+    ${lab.map((i,k) => `<text x="${X(i)}" y="${Hh-6}" text-anchor="${k===0?'start':k===2?'end':'middle'}" fill="#6a6a84" font-family="IBM Plex Mono" font-size="10">${esc(fDate(pts[i].date))}</text>`).join('')}
+    <path class="${a?'fade':''}" d="${area}" fill="url(#cf)"/>
+    <path class="${a?'draw':''}" pathLength="1" d="${line}" fill="none" stroke="url(#cs)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <line id="cx" y1="${pt}" y2="${Hh-pb}" stroke="rgba(255,255,255,.2)" opacity="0"/>
+    <circle id="cdot" r="5" fill="#050508" stroke-width="2.2" opacity="0"/>
+    <circle cx="${X(n-1)}" cy="${Y(pts[n-1].cum)}" r="4" fill="${pts[n-1].cum >= 0 ? '#22c55e' : '#ef4444'}" class="${a?'fade':''}"/>
+    <rect id="chit" x="${pl}" y="0" width="${W-pl-pr}" height="${Hh}" fill="transparent"/>
+  </svg><div class="tip" id="ctip"></div>`;
+  const hit = $('#chit', host), cx = $('#cx', host), dot = $('#cdot', host), tip = $('#ctip', host);
+  const show = clientX => {
+    const r = host.getBoundingClientRect();
+    const i = Math.max(1, Math.min(n-1, Math.round((clientX - r.left - pl)/(W-pl-pr)*(n-1))));
+    const d = pts[i], x = X(i), y = Y(d.cum), col = d.cum >= 0 ? '#22c55e' : '#ef4444';
+    cx.setAttribute('x1', x); cx.setAttribute('x2', x); cx.setAttribute('opacity', 1);
+    dot.setAttribute('cx', x); dot.setAttribute('cy', y); dot.setAttribute('stroke', col); dot.setAttribute('opacity', 1);
+    tip.innerHTML = `<div class="d">${esc(fDate(d.date, {weekday:'short', month:'short', day:'numeric'}))}</div>
+      <div>${d.w}–${d.l}${d.p ? '–' + d.p : ''} · <span class="${uCls(d.units)}">${signU(d.units)}</span></div>
+      <div>Running <b style="color:${col}">${signU(d.cum)}</b></div>`;
+    tip.classList.add('show');
+    const tw = tip.offsetWidth;
+    tip.style.left = Math.min(W - tw, Math.max(0, x - tw/2)) + 'px';
+    tip.style.top = Math.max(0, y - 78) + 'px';
+  };
+  const hide = () => { cx.setAttribute('opacity', 0); dot.setAttribute('opacity', 0); tip.classList.remove('show'); };
+  hit.addEventListener('pointermove', e => show(e.clientX));
+  hit.addEventListener('pointerdown', e => show(e.clientX));
+  hit.addEventListener('pointerleave', hide);
+}
+$('#rangeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  chartRange = b.dataset.r;
+  $$('#rangeSeg button').forEach(x => x.classList.toggle('on', x === b));
+  renderChart(true);
+});
+
+function renderForm(){
+  // This season's picks only, like the streak beside it.
+  const last = H.filter(h => h.date >= R.season_from).slice(0, 20).reverse();
+  $('#formTitle').textContent = `Form · ${R.season} · last 20`;
+  $('#form').innerHTML = last.length ? last.map((h,i) =>
+    `<span class="fd ${h.result.toLowerCase()}" style="--i:${i}" title="${esc(fDate(h.date))} · ${esc(h.player)} ${h.side} ${h.line} ${h.prop} · ${signU(h.u_pnl)}"></span>`).join('')
+    : `<span class="m" style="font-size:12.5px">Starts with the first card of ${esc(R.season)}.</span>`;
+  $('#streakBadge').innerHTML = R.streak.n ? `<span class="streak ${R.streak.type}">${R.streak.type === 'W' ? '🔥' : '🧊'} ${R.streak.type}${R.streak.n} streak</span>` : '';
+}
+
+function renderCalendar(){
+  const dd = D.daily; if(!dd.length){ $('#cal').innerHTML = ''; $('#calInfo').textContent = 'No slates yet.'; return; }
+  const byDate = Object.fromEntries(dd.map(d => [d.date, d]));
+  const end = pDate(dd[dd.length-1].date);
+  let start = pDate(dd[0].date);
+  const minStart = new Date(end - 26*7*864e5); if(start < minStart) start = minStart;
+  start = new Date(start.getFullYear(), start.getMonth(), start.getDate() - start.getDay());   // back to Sunday
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const color = u => { const k = Math.min(1, Math.abs(u)/4); return u > 0 ? `rgba(34,197,94,${.3 + .7*k})` : u < 0 ? `rgba(239,68,68,${.3 + .7*k})` : 'rgba(255,255,255,.18)'; };
+  let html = '', lastMonth = -1;
+  for(let w = new Date(start); w <= end; w = new Date(w.getFullYear(), w.getMonth(), w.getDate() + 7)){
+    const m = w.getMonth();
+    html += `<span class="mo">${m !== lastMonth ? w.toLocaleDateString('en-US', {month:'short'}) : ''}</span>`;
+    lastMonth = m;
+    for(let k = 0; k < 7; k++){
+      const d = new Date(w.getFullYear(), w.getMonth(), w.getDate() + k), key = iso(d), s = byDate[key];
+      if(d > end) { html += '<span class="c x"></span>'; continue; }
+      html += s ? `<span class="c" data-d="${key}" style="background:${color(s.units)}"></span>` : `<span class="c" data-d="${key}"></span>`;
+    }
+  }
+  $('#cal').innerHTML = html;
+  const info = el => {
+    $$('#cal .c.sel').forEach(c => c.classList.remove('sel')); el.classList.add('sel');
+    const s = byDate[el.dataset.d], lbl = fDate(el.dataset.d, {weekday:'short', month:'short', day:'numeric'});
+    $('#calInfo').innerHTML = s ? `${esc(lbl)} · ${s.w}–${s.l}${s.p ? '–' + s.p : ''} · <span class="${uCls(s.units)}">${signU(s.units)}</span>` : `${esc(lbl)} · no picks`;
+  };
+  $('#cal').addEventListener('pointerover', e => { const c = e.target.closest('.c[data-d]'); if(c) info(c); });
+  $('#cal').addEventListener('click', e => { const c = e.target.closest('.c[data-d]'); if(c) info(c); });
+  const sc = $('.cal-scroll'); sc.scrollLeft = sc.scrollWidth;
+}
+
+// ══ MARKETS ══
+function renderMarkets(){
+  const mk = D.markets, maxAbs = Math.max(1, ...mk.map(m => Math.abs(m.units)));
+  $('#mkCard').innerHTML = `<div class="chart-top"><div class="t">Units by prop and side</div></div>` + mk.map(m => {
+    const w = Math.abs(m.units)/maxAbs*50;
+    return `<div class="mk"><span class="n">${esc(m.prop)}<em class="${m.side==='OVER'?'g':'r'}">${m.side === 'OVER' ? 'OVER' : 'UNDER'}</em></span>
+      <span class="rec">${m.w}–${m.l}${m.p ? '–'+m.p : ''}</span>
+      <span class="track"><span class="fill ${m.units >= 0 ? 'pos' : 'neg'}" style="width:${w}%"></span></span>
+      <span class="u ${uCls(m.units)}">${signU(m.units)}</span></div>`;
+  }).join('');
+}
+// ══ RECEIPTS ══
+const rc = {res:'ALL', prop:'ALL', q:'', limit:15};
+function renderReceipts(){
+  const q = rc.q.toLowerCase();
+  const list = H.filter(h => (rc.res === 'ALL' || h.result === rc.res) && (rc.prop === 'ALL' || h.prop === rc.prop) && (!q || h.player.toLowerCase().includes(q)));
+  const sum = list.reduce((s,h) => s + h.u_pnl, 0);
+  $('#rcNote').innerHTML = `${list.length} pick${list.length===1?'':'s'} · <span class="${uCls(sum)}">${signU(sum)}</span>`;
+  $('#rcList').innerHTML = list.length ? list.slice(0, rc.limit).map(h => `
+    <details class="rc"><summary>
+      ${avatar(h.player, true, h.img)}
+      <div style="min-width:0"><div class="l1">${esc(h.player)}${teamLogo(h)}</div>
+        <div class="l2">${esc(fDate(h.date))} · ${h.side === 'OVER' ? 'O' : 'U'} ${esc(h.line)} ${esc(h.prop)} → <span style="color:var(--text)">${h.actual != null ? esc(+h.actual) : '—'}</span></div></div>
+      <span class="res ${h.result}">${h.result}</span>
+      <span class="u ${uCls(h.u_pnl)}">${signU(h.u_pnl)}</span>
+    </summary><div class="body">
+      <div class="meta">${h.opp ? 'vs ' + esc(h.opp) + ' · ' : ''}${odds(h.odds)} · ${h.units}u staked${h.verdict ? ' · Judge: ' + esc(h.verdict.toLowerCase()) : ''}</div>
+      ${h.judge ? esc(h.judge) : `<span class="m">${h.date < D.writeups_from ? `Write-ups are published for picks from ${esc(fDay(D.writeups_from))} on.` : 'No write-up was published for this pick.'}</span>`}
+    </div></details>`).join('') : '<div class="empty">No picks match.</div>';
+  const left = list.length - rc.limit;
+  $('#rcMore').style.display = left > 0 ? 'block' : 'none';
+  $('#rcMore').textContent = `Show more (${left} left)`;
+}
+$('#filters').addEventListener('click', e => {
+  const b = e.target.closest('.fchip'); if(!b) return;
+  const key = b.dataset.res ? 'res' : 'prop';
+  rc[key] = b.dataset[key]; rc.limit = 15;
+  $$(`#filters .fchip[data-${key}]`).forEach(x => x.classList.toggle('on', x === b));
+  renderReceipts();
+});
+let rcT; $('#rcSearch').addEventListener('input', e => { clearTimeout(rcT); rcT = setTimeout(() => { rc.q = e.target.value.trim(); rc.limit = 15; renderReceipts(); }, 150); });
+$('#rcMore').addEventListener('click', () => { rc.limit += 25; renderReceipts(); });
+
+// ══ BOOT ══
+renderTonight(); renderTiles(); renderForm(); renderCalendar(); renderMarkets(); renderReceipts();
+// What decides the card, and exactly which picks the record counts.
+$('#finePrint').textContent = [
+  D.debate_gates ? 'The debate can drop a play the model liked.'
+                 : 'The model alone decides which plays are posted. The debate is a second opinion and the write-up: its verdicts are graded separately and do not change the card.',
+  'Most game nights that leaves a few plays, and some nights none.',
+  'The record counts every pick posted to Discord, wins and losses alike.',
+  R.assumed ? `${R.assumed} pick${R.assumed === 1 ? '' : 's'} from before ${fDay(R.tracked_from)} ${R.assumed === 1 ? 'was' : 'were'} logged before each post was tracked, and ${R.assumed === 1 ? 'is' : 'are'} counted as posted.` : '',
+  R.unposted ? `${R.unposted} pick${R.unposted === 1 ? '' : 's'} generated after the fact, to fill in a game day the bot missed, ${R.unposted === 1 ? 'is' : 'are'} not counted.` : '',
+].filter(Boolean).join(' ');
+if(D.lines_per_night) $('#lpn').textContent = 'about ' + (Math.round(D.lines_per_night / 100) * 100 || D.lines_per_night).toLocaleString('en-US');
+if(D.books) $('#nbooks').textContent = (['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][D.books] || D.books) + ' ';
+$('#updated').textContent = 'Updated ' + new Date(D.generated_at).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZoneName:'short'});
+tickCountdowns(); setInterval(tickCountdowns, 1000);
+
+// Reveal sections as they scroll in; the chart draws itself the first time it's seen.
+renderChart(false);
+let chartAnimated = false;
+if(!('IntersectionObserver' in window)) window.IntersectionObserver = class { constructor(cb){ this.cb = cb; }
+  observe(el){ this.cb([{isIntersecting:true, target:el}]); } unobserve(){} };   // old browsers: just show everything
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if(!e.isIntersecting) return;
+  io.unobserve(e.target);
+  if(REDUCED) return;
+  e.target.classList.add('in');
+  if(!chartAnimated && e.target.contains($('#chart'))){ chartAnimated = true; renderChart(true); }
+}), {threshold:0});
+$$('.reveal, .stag').forEach(el => io.observe(el));
+
+// Scrollspy for the section pills.
+const pills = Object.fromEntries($$('.pill').map(p => [p.getAttribute('href').slice(1), p]));
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if(!e.isIntersecting) return;
+  Object.values(pills).forEach(p => p.classList.remove('on'));
+  const p = pills[e.target.id]; if(!p) return;
+  p.classList.add('on');
+  const row = p.parentElement;       // keep the active pill in view on narrow screens
+  row.scrollTo({left: p.offsetLeft - row.clientWidth/2 + p.offsetWidth/2, behavior: REDUCED ? 'auto' : 'smooth'});
+}), {rootMargin:'-45% 0px -50% 0px'});
+$$('[data-spy]').forEach(s => spy.observe(s));
+
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => renderChart(false), 120); });
+</script>
+</body>
+</html>
